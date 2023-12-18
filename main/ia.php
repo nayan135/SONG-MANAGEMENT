@@ -43,6 +43,8 @@ if ($resultAudio->num_rows > 0) {
                 <div class="card__time card__time-passed">00:00</div>
                 <div class="card__timeline"><progress class="progress-bar" value="0" max="100"></progress></div>
                 <div class="card__time card__time-left">00:00</div>
+                <p>
+                </p>
             </div>
             <div class="card__wrapper">
                 <button class="card__btn backward"><svg width="23" height="16" viewBox="0 0 23 16" fill="none"
