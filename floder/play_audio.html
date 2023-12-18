@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Play Audio</title>
+</head>
+
+<body>
+    <div id="audioList"></div>
+
+    <script>
+        fetch('list_audio.php') // Create a new PHP file to retrieve the list of audio files
+            .then(response => response.json())
+            .then(data => {
+                const audioListDiv = document.getElementById('audioList');
+
+                data.forEach(audio => {
+                    const audioPlayer = document.createElement('audio');
+                    audioPlayer.controls = true;
+
+                    const source = document.createElement('source');
+                    source.src = audio.audio_path;
+                    source.type = audio.audio_type;
+
+                    audioPlayer.appendChild(source);
+                    audioListDiv.appendChild(audioPlayer);
+
+                    const audioName = document.createElement('p');
+                    audioName.textContent = audio.audio_name; // Assuming the audio name is in the response
+                    audioListDiv.appendChild(audioName);
+                });
+            })
+            .catch(error => console.error('Error fetching audio list:', error));
+    </script>
+</body>
+
+</html>

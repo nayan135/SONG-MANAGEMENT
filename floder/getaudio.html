@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Play Audio</title>
+</head>
+
+<body>
+    <div id="audioPlayers"></div>
+
+    <script>
+        fetch('get_all_audio.php') // Replace with the endpoint to fetch all audio files
+            .then(response => response.json()) // Assuming the response is in JSON format
+            .then(audioFiles => {
+                const audioPlayersDiv = document.getElementById('audioPlayers');
+                audioFiles.forEach(file => {
+                    const audioPlayer = document.createElement('audio');
+                    audioPlayer.controls = true;
+
+                    const source = document.createElement('source');
+                    source.src = file.audio_path;
+                    audioPlayer.appendChild(source);
+
+                    audioPlayersDiv.appendChild(audioPlayer);
+                });
+            })
+            .catch(error => console.error('Error fetching audio files:', error));
+    </script>
+</body>
+
+</html>
