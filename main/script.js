@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const nameWithoutExtension = fileName.split('.')[0];
         const [song, artist] = nameWithoutExtension.split('--').map(str => str.trim());
         return [song, artist];
+
     }
 
     function togglePlayPause() {

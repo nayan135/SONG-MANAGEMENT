@@ -13,7 +13,7 @@ if ($conn->connect_error) {
 
 if(isset($_POST['submit'])){
   // Chunk size for reading the file (1MB chunks)
-  $chunkSize = 1048576; // 1MB in bytes
+  $chunkSize = 1048576; // 1MB
 
   // Get file info
   $fileName = $_FILES['audioFile']['name'];
