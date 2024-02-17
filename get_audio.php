@@ -46,7 +46,7 @@ $result = $stmt->get_result();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio Player</title>
-    <link rel="stylesheet" href="\new\main\newww.css"> 
+    <link rel="stylesheet" href="newww.css"> 
 </head>
 <body>
 <div class="song-container">
