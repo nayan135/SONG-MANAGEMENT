@@ -6,18 +6,39 @@ $dbname = "database";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-
 if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Check if the location and device name are set
+if (isset($_POST['latitude']) && isset($_POST['longitude']) && isset($_POST['dname'])) {
+    $latitude = $_POST['latitude'];
+    $longitude = $_POST['longitude'];
+    $dname = $_POST['dname'];
+
+    // Use Google Maps Geocoding API to get the address
+    $address = getFormattedAddress($latitude, $longitude);
+
+    // Insert data into the DEVICE table
+    $insertSql = "INSERT INTO DEVICE (location, dname) VALUES (?, ?)";
+    $insertStmt = $conn->prepare($insertSql);
+    $insertStmt->bind_param("ss", $address, $dname);
+
+    if ($insertStmt->execute()) {
+        echo "Location and device name inserted successfully!";
+    } else {
+        echo "Error: " . $insertStmt->error;
+    }
+
+    $insertStmt->close();
 }
 
 $sql = "SELECT id, song_name, artist_name, song_path, image_path FROM songs";
-
 $stmt = $conn->prepare($sql);
 $stmt->execute();
-
 $result = $stmt->get_result();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -28,22 +49,24 @@ $result = $stmt->get_result();
     <link rel="stylesheet" href="\new\main\newww.css"> 
 </head>
 <body>
+<div class="song-container">
+    <?php
+      // Output audio data
+      while ($row = $result->fetch_assoc()) {
+        $encodedFilePath = urlencode($row['song_path']);
+        $encodedFilePath = str_replace('+', '%20', $encodedFilePath);
+    ?>
+    <div class="song-tile" onclick="showCard('<?php echo $encodedFilePath ?>', '<?php echo $row['song_name'] ?>', '<?php echo $row['artist_name'] ?>', '<?php echo $row['image_path'] ?>')">
+    <div class="tile__img song-tile-img" style="background-image: url('<?php echo $row['image_path'] ?>');"></div>
+    <div class="tile__info">
+        <div class="tile__title"><?php echo $row['song_name'] ?></div>
+        <div class="tile__subtitle"><?php echo $row['artist_name'] ?></div>
+        <div class="play-icon">&#9654;</div>
+    </div>
+</div>
 
-<?php
-// Output audio data
-while ($row = $result->fetch_assoc()) {
-    $encodedFilePath = urlencode($row['song_path']);
-    $encodedFilePath = str_replace('+', '%20', $encodedFilePath); 
-    
-echo '<div class="song-tile" onclick="showCard(\'' . $encodedFilePath . '\', \'' . $row['song_name'] . '\', \'' . $row['artist_name'] . '\', \'' . $row['image_path'] . '\')">';
-           echo '<div class="tile__img" id="cardImg"></div>';
-    echo '<div class="tile__info">';
-    echo '<div class="tile__title" id="tileSongName">' . $row['song_name'] . '</div>';
-    echo '<div class="tile__subtitle" id="tileArtistName">' . $row['artist_name'] . '</div>';
-    echo '</div>';
-    echo '</div>';
-}
-?>
+    <?php } ?>
+  </div>
 
 <div class="card" id="sdiv" style="display: none;">
     <div class="close-button" id="closeButton" onclick="closeCard()">Close</div>
@@ -73,162 +96,41 @@ echo '<div class="song-tile" onclick="showCard(\'' . $encodedFilePath . '\', \''
 
 <audio id="audioPlayer"></audio>
 
+<script src="testing.js"></script>
+ <!--
+_________-implementing google maps api-_______
+
 <script>
+    // Fetch location using Google Maps API
+    function initMap() {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            var userLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
 
+            // Send location and device name to the server using fetch
+            fetch('your_php_script.php', {
+                method: 'POST', 
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'latitude=' + userLocation.lat + '&longitude=' + userLocation.lng + '&dname=' + navigator.userAgent,
+            })
+                .then(response => response.text())
+                .then(data => console.log(data))
+                .catch(error => console.error('Error:', error));
 
-  function showCard(encodedSongPath, songName, artistName, imagePath) {
-    const card = document.getElementById('sdiv');
-    const audioPlayer = document.getElementById('audioPlayer');
-    const cardImg = document.getElementById('cardImg');
-    audioPlayer.innerHTML = '';
-
-    // Decode the URL-encoded file path
-    const decodedSongPath = decodeURIComponent(encodedSongPath);
-
-    // Create a new source element
-    const source = document.createElement('source');
-    source.src = decodedSongPath;
-    source.type = 'audio/mp3'; // Adjust the type based on your audio file format
-
-    // Append the source element to the audio player
-    audioPlayer.appendChild(source);
-
-    // Set the text content of card elements
-    document.getElementById('songName').textContent = songName;
-    document.getElementById('artistName').textContent = artistName;
- cardImg.style.backgroundImage = "url(" + imagePath + ")";
-        
- audioPlayer.load(); // Reload the audio element to apply the changes
- 
-    audioPlayer.play();
-
-    card.style.display = 'block';
-}
-
-    function closeCard() {
-        const card = document.getElementById('sdiv');
-        card.style.display = 'none';
+            // Display location information in text format
+            var locationInfo = document.getElementById('locationInfo');
+            locationInfo.textContent = 'Your current location is: ' + userLocation.lat + ', ' + userLocation.lng;
+        }, function () {
+            // Handle geolocation error
+            alert('Error: The Geolocation service failed.');
+        });
     }
-// Get references to HTML elements
-
-const audioPlayer = document.getElementById('audioPlayer');
-const playPauseButton = document.querySelector('.play-pause');
-const backwardButton = document.querySelector('.backward');
-const forwardButton = document.querySelector('.forward');
- const progressBar = document.querySelector('.progress-bar');
-    const currentTimeDisplay = document.querySelector('.card__time-passed');
-    const totalTimeDisplay = document.querySelector('.card__time-left');
-let isPlaying = false;
-playPauseButton.addEventListener('click', togglePlay);
-
-// Add event listeners for play-pause button
-playPauseButton.addEventListener('click', togglePlay);
-
-// Add event listeners for backward and forward buttons
-backwardButton.addEventListener('click', backward);
-forwardButton.addEventListener('click', forward);
-
-// Event listener for canplaythrough event
-
-// Function to toggle play-pause
-
-
-// Function to toggle play-pause
-function togglePlay() {
-    if (audioPlayer.paused) {
-        audioPlayer.play().catch((error) => {
-            console.error('Play failed:', error);
-        });
-    } else {
-        audioPlayer.pause();
-    }
-}
-
-audioPlayer.addEventListener('play', () => {
-    isPlaying = true;
-    playPauseButton.innerHTML = '<svg height="22px" id="Layer_1" style="enable-background:new 0 0 512 512;" version="1.1" viewBox="0 0 512 512" width="18px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g><path d="M224,435.8V76.1c0-6.7-5.4-12.1-12.2-12.1h-71.6c-6.8,0-12.2,5.4-12.2,12.1v359.7c0,6.7,5.4,12.2,12.2,12.2h71.6   C218.6,448,224,442.6,224,435.8z"/><path d="M371.8,64h-71.6c-6.7,0-12.2,5.4-12.2,12.1v359.7c0,6.7,5.4,12.2,12.2,12.2h71.6c6.7,0,12.2-5.4,12.2-12.2V76.1   C384,69.4,378.6,64,371.8,64z"/></g></svg>';
-
-    });
-
-// Event listener for pause event
-audioPlayer.addEventListener('pause', () => {
-    isPlaying = false;
-    playPauseButton.innerHTML = '<svg fill="#fff" height="22" viewBox="0 0 18 22" width="18" xmlns="http://www.w3.org/2000/svg"><path d="m0 0v22l18-11z" fill="#000"></path></svg>';
-
-    });
-
-// Event listener for canplaythrough event
-audioPlayer.addEventListener('canplaythrough', () => {
-    if (isPlaying) {
-        audioPlayer.play();
-    }
-});
-// Function to go backward
-function backward() {
-    audioPlayer.currentTime -= 5; // Go back 5 seconds
-}
-
-// Function to go forward
-function forward() {
-    audioPlayer.currentTime += 5; // Go forward 5 seconds
-}
-currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
-            totalTimeDisplay.textContent = formatTime(audioPlayer.duration);
-
-            // Add event listeners for the audio player
-            audioPlayer.addEventListener('timeupdate', function () {
-                currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
-                totalTimeDisplay.textContent = formatTime(audioPlayer.duration);
-                var percentage = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-                progressBar.value = percentage;
-            });
-
- progressBar.addEventListener('input', updateProgress);
-
-            function updateProgress() {
-                const progress = parseInt(progressBar.value);
-                const duration = audioPlayer.duration;
-                const currentTime = (progress * duration) / 100;
-                audioPlayer.currentTime = currentTime;
-            }
-        
-
-        function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const remainingSeconds = Math.floor(seconds % 60);
-            const formattedTime = `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
-            return formattedTime;
-        }
-
-
-  const stickyDiv = document.getElementById("sdiv");
-
-        // Get the initial position of the div
-        const initialPosition = stickyDiv.getBoundingClientRect().top;
-
-        // Add a scroll event listener to handle scrolling
-        window.addEventListener("scroll", function () {
-            // Check if the page has been scrolled past the initial position of the div
-            if (window.scrollY >= initialPosition) {
-                // Make the div sticky
-                stickyDiv.style.position = "fixed";
-                stickyDiv.style.top = "auto";
-            } else {
-                // Unstick the div
-                stickyDiv.style.position = "static";
-            }
-        });
-
-     
-
-        card.addEventListener('mouseover', function () {
-            closeButton.style.display = 'block';
-        });
-
-        card.addEventListener('mouseout', function () {
-            closeButton.style.display = 'none';
-        });
-
 </script>
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places&callback=initMap"></script>
+-->
 </body>
 </html>

@@ -102,6 +102,29 @@ $conn->close();
     </div>
 
     <audio id="audioPlayer"></audio>
+     <script>
+        function initMap() {
+            // Create a map centered at the user's location
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+
+
+
+                // Display location information in text format
+                var locationInfo = document.getElementById('locationInfo');
+                locationInfo.textContent = 'Your current location is: ' + userLocation.lat + ', ' + userLocation.lng;
+            }, function() {
+                // Handle geolocation error
+                alert('Error: The Geolocation service failed.');
+            });
+        }
+    </script>
+
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD1_G4Tky93bKcmEY16V93aDE6QTR97dlw&callback=initMap"></script>
+
     <script>
      function showCard() {
         const card = document.getElementById('sdiv');
