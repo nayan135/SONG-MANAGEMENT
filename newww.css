@@ -10,42 +10,65 @@ body {
     overflow: hidden;
 }
 
+.song-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin: 0 auto;
+    max-width: 1000px;
+}
+
 .song-tile {
-    width: 200px;
-    background: #090909;
-    border-radius: 15px;
-    overflow: hidden;
+    display: flex;
+    align-items: center;
+    background-color: #f0f0f0;
+    border-radius: 20px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    padding: 20px;
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: all 0.2s ease-in-out;
 }
 
 .song-tile:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
-.song-tile-img {
+.tile__img-container {
+    width: 120px;
     height: 120px;
-    background-size: cover;
-    background-position: center;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 20px;
+}
+
+.tile__img {
+    /* Object-fit: cover keeps aspect ratio, use object-fit: contain for 120x120 */
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
 }
 
 .tile__info {
-    padding: 10px;
-    color: #fff;
+    flex: 1;
 }
 
 .tile__title {
     font-weight: bold;
-    font-size: 16px;
+    font-size: 18px;
 }
 
 .tile__subtitle {
     font-size: 14px;
+    color: #888;
 }
 
-.play-icon {
-    font-size: 30px;
-    margin-top: 5px;
+.play-pause {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.play-pause span {
+    font-size: 24px;
 }
 
 #sdiv {
@@ -74,7 +97,7 @@ html {
     backdrop-filter: blur(30px);
     /* Your existing card styles... */
     position: -webkit-sticky;
-    transition: transform 0.5s ease;
+    transition: transform 0.3s cubic-bezier(0.15, 0.43, 0.93, 0.27);
 }
 
 .center {
@@ -215,6 +238,12 @@ html {
     justify-content: center;
     align-items: center;
     height: 100vh;
+}
+
+.song-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
 }
 
 

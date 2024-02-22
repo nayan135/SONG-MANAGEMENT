@@ -1,37 +1,7 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "database";
+include 'config.php';
 
-$conn = new mysqli($servername, $username, $password, $dbname);
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-// Check if the location and device name are set
-if (isset($_POST['latitude']) && isset($_POST['longitude']) && isset($_POST['dname'])) {
-    $latitude = $_POST['latitude'];
-    $longitude = $_POST['longitude'];
-    $dname = $_POST['dname'];
-
-    // Use Google Maps Geocoding API to get the address
-    $address = getFormattedAddress($latitude, $longitude);
-
-    // Insert data into the DEVICE table
-    $insertSql = "INSERT INTO DEVICE (location, dname) VALUES (?, ?)";
-    $insertStmt = $conn->prepare($insertSql);
-    $insertStmt->bind_param("ss", $address, $dname);
-
-    if ($insertStmt->execute()) {
-        echo "Location and device name inserted successfully!";
-    } else {
-        echo "Error: " . $insertStmt->error;
-    }
-
-    $insertStmt->close();
-}
 
 $sql = "SELECT id, song_name, artist_name, song_path, image_path FROM songs";
 $stmt = $conn->prepare($sql);
@@ -47,26 +17,26 @@ $result = $stmt->get_result();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio Player</title>
     <link rel="stylesheet" href="newww.css"> 
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
 <body>
-<div class="song-container">
+    <div class="song-container">
     <?php
-      // Output audio data
-      while ($row = $result->fetch_assoc()) {
+        while ($row = $result->fetch_assoc()) {
         $encodedFilePath = urlencode($row['song_path']);
         $encodedFilePath = str_replace('+', '%20', $encodedFilePath);
     ?>
     <div class="song-tile" onclick="showCard('<?php echo $encodedFilePath ?>', '<?php echo $row['song_name'] ?>', '<?php echo $row['artist_name'] ?>', '<?php echo $row['image_path'] ?>')">
-    <div class="tile__img song-tile-img" style="background-image: url('<?php echo $row['image_path'] ?>');"></div>
-    <div class="tile__info">
+        <div class="tile__img song-tile-img" style="background-image: url('<?php echo $row['image_path'] ?>');"></div>
+        <div class="tile__info">
         <div class="tile__title"><?php echo $row['song_name'] ?></div>
         <div class="tile__subtitle"><?php echo $row['artist_name'] ?></div>
-        <div class="play-icon">&#9654;</div>
+        <div class="play-pause" onclick="showCard()"><span class="material-symbols-outlined">play_arrow</span></div>
+        </div>
     </div>
-</div>
-
     <?php } ?>
-  </div>
+    </div>
+
 
 <div class="card" id="sdiv" style="display: none;">
     <div class="close-button" id="closeButton" onclick="closeCard()">Close</div>
